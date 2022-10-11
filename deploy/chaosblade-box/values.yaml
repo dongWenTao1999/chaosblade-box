@@ -1,0 +1,25 @@
+# Default values for chaosblade-box.
+box:
+  repository: chaosbladeio/chaosblade-box
+  version: 1.0.2
+  pullPolicy: IfNotPresent
+
+spring:
+  datasource:
+    url: jdbc:mysql://chaosblade-box-mysql:3306/chaosblade?characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
+    username: root
+    password:
+chaos:
+  agent:
+    version: 1.0.2
+    repository: chaosbladeio/chaosblade-agent
+    url: https://chaosblade.oss-cn-hangzhou.aliyuncs.com/platform/release/1.0.2/chaosagent.tar.gz
+    helm: https://chaosblade.oss-cn-hangzhou.aliyuncs.com/platform/release/1.0.2/chaosblade-box-agent-1.0.2.tgz
+  function:
+    sync:
+      type: ALL
+logging:
+  level:
+    root: info
+    box: info
+

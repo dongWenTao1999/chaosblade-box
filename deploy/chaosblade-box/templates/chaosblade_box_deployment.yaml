@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chaosblade-box
+  labels:
+    name: chaosblade-box
+    app: chaosblade-box
+spec:
+  selector:
+    matchLabels:
+      name: chaosblade-box
+      app: chaosblade-box
+  template:
+    metadata:
+      labels:
+        name: chaosblade-box
+        app: chaosblade-box
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: type
+                    operator: NotIn
+                    values:
+                      - virtual-kubelet
+      containers:
+        - name: chaosblade-box
+          image: {{ .Values.box.repository }}:{{ .Values.box.version }}
+          imagePullPolicy: {{ .Values.box.pullPolicy }}
+          env:
+            - name: KUBERNETES_NODENAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+          args:
+            - '--spring.datasource.url={{ .Values.spring.datasource.url }}'
+            - '--spring.datasource.username={{ .Values.spring.datasource.username }}'
+            - '--spring.datasource.password={{ .Values.spring.datasource.password }}'
+            - '--chaos.function.sync.type={{ .Values.chaos.function.sync.type }}'
+            - '--chaos.agent.version={{ .Values.chaos.agent.version }}'
+            - '--chaos.agent.repository={{ .Values.chaos.agent.repository }}'
+            - '--chaos.agent.url={{ .Values.chaos.agent.url }}'
+            - '--chaos.agent.helm={{ .Values.chaos.agent.helm }}'
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - mountPath: /var/run/docker.sock
+              name: docker-socket
+            - mountPath: /etc/hosts
+              name: hosts
+
+      dnsPolicy: ClusterFirstWithHostNet
+      tolerations:
+        - effect: NoSchedule
+          operator: Exists
+      volumes:
+        - hostPath:
+            path: /var/run/docker.sock
+          name: docker-socket
+        - hostPath:
+            path: /etc/hosts
+          name: hosts
+      serviceAccountName: chaosblade-box
